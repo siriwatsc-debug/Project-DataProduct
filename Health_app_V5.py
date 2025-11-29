@@ -3,8 +3,16 @@ import pandas as pd
 import hashlib
 import json
 from datetime import datetime
-import plotly.express as px
-import plotly.graph_objects as go
+
+# Plotly imports - make sure to install plotly first
+try:
+    import plotly.express as px
+    import plotly.graph_objects as go
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+    px = None
+    go = None
 
 # Set page configuration
 st.set_page_config(
@@ -94,6 +102,27 @@ st.markdown("""
     .register-button:hover {
         background-color: #7A2D56;
     }
+    .logout-button {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    .logout-button:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+    }
+    .user-card {
+        background-color: #e9ecef;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #2E86AB;
+    }
     .lab-record {
         border: 1px solid #ddd;
         border-radius: 5px;
@@ -137,6 +166,15 @@ st.markdown("""
         background-color: #fff8f8;
         border-left: 4px solid #dc3545;
     }
+    /* แก้ไขฟอนต์สำหรับภาษาไทย */
+    * {
+        font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif';
+    }
+    
+    /* ปรับปรุงการแสดงผลปุ่ม */
+    .stButton button {
+        font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif';
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -153,7 +191,6 @@ def cache_key(user_id, data_type, date=None):
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def get_cached_data(_key):
     """Get data from cache - using st.cache_data for immutable data"""
-    # This function is now simplified as Streamlit handles caching
     return None
 
 @st.cache_resource
@@ -163,8 +200,6 @@ def get_app_cache():
 
 def clear_user_cache(user_id):
     """Clear cache for user - using Streamlit's cache clearing mechanisms"""
-    # For st.cache_data, we rely on TTL since we can't clear specific entries
-    # For this implementation, we'll handle cache invalidation differently
     pass
 
 def init_app_data():
@@ -212,7 +247,6 @@ def save_health_record(user_id, record_date, health_data):
     date_key = record_date.isoformat()
     st.session_state.health_data[user_id][date_key] = health_data_with_meta
     
-    # Clear cache for this user's health data by using TTL or forcing recomputation
     return True
 
 @st.cache_data(ttl=1800)  # Cache for 30 minutes
@@ -316,6 +350,15 @@ def get_health_status(value, normal_range, value_type="normal"):
         else:
             return "❌", "ต่ำ", "abnormal"
 
+def logout_user():
+    """Logout user and clear session state"""
+    st.session_state.logged_in = False
+    st.session_state.user_id = None
+    st.session_state.username = ''
+    st.session_state.current_screen = 'home'
+    st.success("ออกจากระบบเรียบร้อยแล้ว!")
+    st.rerun()
+
 # Initialize application data
 init_app_data()
 
@@ -334,62 +377,94 @@ def navigate_to(screen):
     st.session_state.current_screen = screen
 
 def render_navigation():
-    """Render fixed navigation buttons"""
+    """Render fixed navigation buttons with user info and logout"""
+    # User info bar at the top
+    if st.session_state.logged_in:
+        user_profile = get_user_profile(st.session_state.user_id) or {}
+        full_name = f"{user_profile.get('firstname', '')} {user_profile.get('lastname', '')}".strip()
+        
+        # ใช้ Streamlit components แทน JavaScript
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            st.markdown(f"""
+            <div class="user-card">
+                <h4>👤 ข้อมูลผู้ใช้</h4>
+                <strong>ชื่อผู้ใช้:</strong> {st.session_state.username}<br>
+                {f"<strong>ชื่อ-สกุล:</strong> {full_name}" if full_name else ""}
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            if st.button("🚪 ออกจากระบบ", key="header_logout", use_container_width=True):
+                logout_user()
+    
+    # Main navigation
     st.markdown('<div class="nav-container">', unsafe_allow_html=True)
     
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
-        active_class = "active" if st.session_state.current_screen == 'home' else ""
         if st.button("🏠 หน้าแรก", use_container_width=True, key="nav_home"):
             navigate_to('home')
-        if st.session_state.current_screen == 'home':
-            st.markdown('<style>div[data-testid="stButton"]:has(button[kind="secondary"]:contains("🏠 หน้าแรก")) button {border: 2px solid #dc3545 !important; background-color: #A23B72 !important;}</style>', unsafe_allow_html=True)
     
     with col2:
-        active_class = "active" if st.session_state.current_screen == 'profile' else ""
         if st.button("👤 ประวัติของฉัน", use_container_width=True, key="nav_profile"):
             navigate_to('profile')
-        if st.session_state.current_screen == 'profile':
-            st.markdown('<style>div[data-testid="stButton"]:has(button[kind="secondary"]:contains("👤 ประวัติของฉัน")) button {border: 2px solid #dc3545 !important; background-color: #A23B72 !important;}</style>', unsafe_allow_html=True)
     
     with col3:
-        active_class = "active" if st.session_state.current_screen == 'health_form' else ""
         if st.button("📝 บันทึกสุขภาพ", use_container_width=True, key="nav_health_form"):
             navigate_to('health_form')
-        if st.session_state.current_screen == 'health_form':
-            st.markdown('<style>div[data-testid="stButton"]:has(button[kind="secondary"]:contains("📝 บันทึกสุขภาพ")) button {border: 2px solid #dc3545 !important; background-color: #A23B72 !important;}</style>', unsafe_allow_html=True)
     
     with col4:
-        active_class = "active" if st.session_state.current_screen == 'lab_results' else ""
         if st.button("🔬 ผลแล็บ", use_container_width=True, key="nav_lab_results"):
             navigate_to('lab_results')
-        if st.session_state.current_screen == 'lab_results':
-            st.markdown('<style>div[data-testid="stButton"]:has(button[kind="secondary"]:contains("🔬 ผลแล็บ")) button {border: 2px solid #dc3545 !important; background-color: #A23B72 !important;}</style>', unsafe_allow_html=True)
     
     with col5:
-        active_class = "active" if st.session_state.current_screen == 'summary' else ""
         if st.button("📊 สรุปผล", use_container_width=True, key="nav_summary"):
             navigate_to('summary')
-        if st.session_state.current_screen == 'summary':
-            st.markdown('<style>div[data-testid="stButton"]:has(button[kind="secondary"]:contains("📊 สรุปผล")) button {border: 2px solid #dc3545 !important; background-color: #A23B72 !important;}</style>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Screen 1: Home with login and registration
 def home_screen():
-    st.markdown('<div class="main-header">Welcome to Smart Health Checker</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">🏥 Smart Health Checker</div>', unsafe_allow_html=True)
     
-    # Create two columns for the images
-    col1, col2 = st.columns(2)
+    # If user is logged in, show welcome message
+    if st.session_state.logged_in:
+        user_profile = get_user_profile(st.session_state.user_id) or {}
+        full_name = f"{user_profile.get('firstname', '')} {user_profile.get('lastname', '')}".strip()
+        
+        # การ์ดต้อนรับ
+        st.markdown(f"""
+        <div class="user-card">
+            <h3>👋 สวัสดี {full_name if full_name else st.session_state.username}</h3>
+            <p>✅ คุณล็อกอินเข้าสู่ระบบเรียบร้อยแล้ว</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Create two columns for the images
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown('<div class="image-placeholder">📊 ดูผลวิเคราะห์สุขภาพ</div>', unsafe_allow_html=True)
+            if st.button("📊 ดูสรุปผลสุขภาพ", use_container_width=True, key="home_to_summary"):
+                navigate_to('summary')
+        
+        with col2:
+            st.markdown('<div class="image-placeholder">📝 บันทึกข้อมูลใหม่</div>', unsafe_allow_html=True)
+            if st.button("📝 บันทึกสุขภาพ", use_container_width=True, key="home_to_health_form"):
+                navigate_to('health_form')
+        
+        # ปุ่มออกจากระบบกลางหน้า
+        st.markdown("---")
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🚪 ออกจากระบบ", use_container_width=True, key="home_logout_main"):
+                logout_user()
+        
+        return
     
-    with col1:
-        st.markdown('<div class="image-placeholder">🏥 Health Check</div>', unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown('<div class="image-placeholder">📊 Analytics</div>', unsafe_allow_html=True)
-    
-    # Login/Register tabs
+    # Login/Register tabs (only show if not logged in)
     tab1, tab2 = st.tabs(["🔐 เข้าสู่ระบบ", "📝 ลงทะเบียน"])
     
     with tab1:
@@ -492,17 +567,23 @@ def profile_screen():
         phone = st.text_input("เบอร์โทรศัพท์:", value=user_profile.get('phone', ''), key="profile_phone")
         email = st.text_input("อีเมล:", value=user_profile.get('email', ''), key="profile_email")
     
-    if st.button("Update Profile", key="update_profile"):
-        user_info = {
-            'firstname': firstname,
-            'lastname': lastname,
-            'email': email,
-            'phone': phone
-        }
-        if update_user_profile(st.session_state.user_id, user_info):
-            st.success("Profile updated successfully!")
-        else:
-            st.error("Error updating profile")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Update Profile", use_container_width=True, key="update_profile"):
+            user_info = {
+                'firstname': firstname,
+                'lastname': lastname,
+                'email': email,
+                'phone': phone
+            }
+            if update_user_profile(st.session_state.user_id, user_info):
+                st.success("Profile updated successfully!")
+            else:
+                st.error("Error updating profile")
+    
+    with col2:
+        if st.button("🚪 ออกจากระบบ", use_container_width=True, key="profile_logout"):
+            logout_user()
 
 # Screen 3: Health Form
 def health_form_screen():
@@ -681,55 +762,61 @@ def health_form_screen():
         lv_heartrate = st.number_input("อัตราการเต้นหัวใจ (bpm)", min_value=0, 
                                      value=user_health_data.get('lv_heartrate', 72), key="lv_heartrate")
     
-    # Save button
-    if st.button("บันทึกข้อมูลสุขภาพ", use_container_width=True, key="save_health_data"):
-        health_data = {
-            'st_gender': st_gender,
-            'lv_age': lv_age,
-            'lv_weight': float(lv_weight),
-            'lv_height': float(lv_height),
-            'lv_bmi': float(lv_bmi),
-            'st_smoking': st_smoking,
-            'st_hypertension': st_hypertension,
-            'lv_glucose': float(lv_glucose),
-            'lv_HbA1c': float(lv_HbA1c),
-            'st_diabetes': st_diabetes,
-            'st_heart_disease': st_heart_disease,
-            'st_family_history_with_overweight': st_family_history_with_overweight,
-            'st_favc': st_favc,
-            'st_fcvc': st_fcvc,
-            'lv_ncp': lv_ncp,
-            'st_caec': st_caec,
-            'st_ch2o': st_ch2o,
-            'st_scc': st_scc,
-            'st_faf': st_faf,
-            'st_calc': st_calc,
-            'lv_total_bilirubin': float(lv_total_bilirubin),
-            'lv_direct_bilirubin': float(lv_direct_bilirubin),
-            'lv_alkphos': float(lv_alkphos),
-            'lv_sgpt': float(lv_sgpt),
-            'lv_sgot': float(lv_sgot),
-            'lv_total_protiens': float(lv_total_protiens),
-            'lv_alb': float(lv_alb),
-            'lv_ag_ratio': float(lv_ag_ratio),
-            'lv_creatinine': float(lv_creatinine),
-            'lv_bun': float(lv_bun),
-            'lv_gfr': float(lv_gfr),
-            'lv_urine_output': lv_urine_output,
-            'lv_cigsperday': lv_cigsperday,
-            'st_bpmeds': st_bpmeds,
-            'st_prevalentstroke': st_prevalentstroke,
-            'st_prevalenthyp': st_prevalenthyp,
-            'lv_totchol': float(lv_totchol),
-            'lv_sysbp': float(lv_sysbp),
-            'lv_diabp': float(lv_diabp),
-            'lv_heartrate': lv_heartrate
-        }
-        
-        if save_health_record(st.session_state.user_id, record_date, health_data):
-            st.success("บันทึกข้อมูลสุขภาพเรียบร้อยแล้ว!")
-        else:
-            st.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล")
+    # Save button and logout
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("บันทึกข้อมูลสุขภาพ", use_container_width=True, key="save_health_data"):
+            health_data = {
+                'st_gender': st_gender,
+                'lv_age': lv_age,
+                'lv_weight': float(lv_weight),
+                'lv_height': float(lv_height),
+                'lv_bmi': float(lv_bmi),
+                'st_smoking': st_smoking,
+                'st_hypertension': st_hypertension,
+                'lv_glucose': float(lv_glucose),
+                'lv_HbA1c': float(lv_HbA1c),
+                'st_diabetes': st_diabetes,
+                'st_heart_disease': st_heart_disease,
+                'st_family_history_with_overweight': st_family_history_with_overweight,
+                'st_favc': st_favc,
+                'st_fcvc': st_fcvc,
+                'lv_ncp': lv_ncp,
+                'st_caec': st_caec,
+                'st_ch2o': st_ch2o,
+                'st_scc': st_scc,
+                'st_faf': st_faf,
+                'st_calc': st_calc,
+                'lv_total_bilirubin': float(lv_total_bilirubin),
+                'lv_direct_bilirubin': float(lv_direct_bilirubin),
+                'lv_alkphos': float(lv_alkphos),
+                'lv_sgpt': float(lv_sgpt),
+                'lv_sgot': float(lv_sgot),
+                'lv_total_protiens': float(lv_total_protiens),
+                'lv_alb': float(lv_alb),
+                'lv_ag_ratio': float(lv_ag_ratio),
+                'lv_creatinine': float(lv_creatinine),
+                'lv_bun': float(lv_bun),
+                'lv_gfr': float(lv_gfr),
+                'lv_urine_output': lv_urine_output,
+                'lv_cigsperday': lv_cigsperday,
+                'st_bpmeds': st_bpmeds,
+                'st_prevalentstroke': st_prevalentstroke,
+                'st_prevalenthyp': st_prevalenthyp,
+                'lv_totchol': float(lv_totchol),
+                'lv_sysbp': float(lv_sysbp),
+                'lv_diabp': float(lv_diabp),
+                'lv_heartrate': lv_heartrate
+            }
+            
+            if save_health_record(st.session_state.user_id, record_date, health_data):
+                st.success("บันทึกข้อมูลสุขภาพเรียบร้อยแล้ว!")
+            else:
+                st.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล")
+    
+    with col2:
+        if st.button("🚪 ออกจากระบบ", use_container_width=True, key="health_form_logout"):
+            logout_user()
 
 # Screen 4: Lab Results with History and Dashboard
 def lab_results_screen():
@@ -740,6 +827,9 @@ def lab_results_screen():
     
     if not user_records:
         st.info("ยังไม่มีข้อมูลผลการตรวจ กรุณากรอกข้อมูลในหน้า 'แบบฟอร์มบันทึกสุขภาพ'")
+        # Add logout button
+        if st.button("🚪 ออกจากระบบ", key="lab_results_logout_empty"):
+            logout_user()
         return
     
     # Create tabs for different views
@@ -844,18 +934,6 @@ def lab_results_screen():
                 </div>
                 <div style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">ค่าปกติ: ≤ 200 mg/dL</div>
                 """, unsafe_allow_html=True)
-                
-                # Triglycerides
-                triglycerides = health_data.get('lv_ag_ratio', 0)  # Using A/G ratio as placeholder
-                trig_icon, trig_status, trig_class = get_health_status(triglycerides, 150, "high_bad")
-                trig_style = "lab-value-normal" if trig_class == "normal" else "lab-value-abnormal"
-                st.markdown(f"""
-                <div class="lab-value-container {trig_style}">
-                    <div><strong>ไตรกลีเซอไรด์</strong></div>
-                    <div>{triglycerides:.1f} {trig_icon} <span class="{trig_class}-value">{trig_status}</span></div>
-                </div>
-                <div style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">ค่าปกติ: ≤ 150</div>
-                """, unsafe_allow_html=True)
             
             with col2:
                 # Section 4: Liver Function
@@ -883,30 +961,6 @@ def lab_results_screen():
                     <div>{sgot_value} U/L {sgot_icon} <span class="{sgot_class}-value">{sgot_status}</span></div>
                 </div>
                 <div style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">ค่าปกติ: ≤ 40 U/L</div>
-                """, unsafe_allow_html=True)
-                
-                # Alkaline Phosphatase
-                alkphos_value = health_data.get('lv_alkphos', 0)
-                alkphos_icon, alkphos_status, alkphos_class = get_health_status(alkphos_value, 120, "high_bad")
-                alkphos_style = "lab-value-normal" if alkphos_class == "normal" else "lab-value-abnormal"
-                st.markdown(f"""
-                <div class="lab-value-container {alkphos_style}">
-                    <div><strong>Alkaline Phosphatase</strong></div>
-                    <div>{alkphos_value} {alkphos_icon} <span class="{alkphos_class}-value">{alkphos_status}</span></div>
-                </div>
-                <div style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">ค่าปกติ: ≤ 120</div>
-                """, unsafe_allow_html=True)
-                
-                # Bilirubin
-                bilirubin_value = health_data.get('lv_total_bilirubin', 0)
-                bilirubin_icon, bilirubin_status, bilirubin_class = get_health_status(bilirubin_value, 1.2, "high_bad")
-                bilirubin_style = "lab-value-normal" if bilirubin_class == "normal" else "lab-value-abnormal"
-                st.markdown(f"""
-                <div class="lab-value-container {bilirubin_style}">
-                    <div><strong>บิลิรูบินรวม</strong></div>
-                    <div>{bilirubin_value} mg/dL {bilirubin_icon} <span class="{bilirubin_class}-value">{bilirubin_status}</span></div>
-                </div>
-                <div style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">ค่าปกติ: ≤ 1.2 mg/dL</div>
                 """, unsafe_allow_html=True)
                 
                 # Section 5: Kidney Function
@@ -947,36 +1001,13 @@ def lab_results_screen():
                 </div>
                 <div style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">ค่าปกติ: ≥ 90 mL/min/1.73m²</div>
                 """, unsafe_allow_html=True)
-                
-                # Section 6: Protein Levels
-                st.markdown("#### 🥚 ระดับโปรตีน")
-                
-                # Total Protein
-                protein_value = health_data.get('lv_total_protiens', 0)
-                protein_icon, protein_status, protein_class = get_health_status(protein_value, (6.0, 8.3), "normal")
-                protein_style = "lab-value-normal" if protein_class == "normal" else "lab-value-abnormal"
-                st.markdown(f"""
-                <div class="lab-value-container {protein_style}">
-                    <div><strong>โปรตีนรวม</strong></div>
-                    <div>{protein_value} g/dL {protein_icon} <span class="{protein_class}-value">{protein_status}</span></div>
-                </div>
-                <div style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">ค่าปกติ: 6.0-8.3 g/dL</div>
-                """, unsafe_allow_html=True)
-                
-                # Albumin
-                albumin_value = health_data.get('lv_alb', 0)
-                albumin_icon, albumin_status, albumin_class = get_health_status(albumin_value, (3.4, 5.4), "normal")
-                albumin_style = "lab-value-normal" if albumin_class == "normal" else "lab-value-abnormal"
-                st.markdown(f"""
-                <div class="lab-value-container {albumin_style}">
-                    <div><strong>อัลบูมิน</strong></div>
-                    <div>{albumin_value} g/dL {albumin_icon} <span class="{albumin_class}-value">{albumin_status}</span></div>
-                </div>
-                <div style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">ค่าปกติ: 3.4-5.4 g/dL</div>
-                """, unsafe_allow_html=True)
     
     with tab2:  # Trends Tab
         st.markdown('<div class="sub-header">กราฟแนวโน้มผลแล็บ</div>', unsafe_allow_html=True)
+        
+        if not PLOTLY_AVAILABLE:
+            st.error("⚠️ กรุณาติดตั้ง Plotly โดยใช้คำสั่ง: pip install plotly")
+            return
         
         # Prepare data for trends
         dates = []
@@ -1081,13 +1112,6 @@ def lab_results_screen():
                         chol_icon, chol_status, _ = get_health_status(chol_value, 200, "high_bad")
                         chol_color = "🔴" if chol_status != "ปกติ" else "🟢"
                         st.write(f"{chol_color} คอเลสเตอรอลรวม: {chol_value} mg/dL ({chol_icon} {chol_status})")
-                        
-                        sysbp = record.get('lv_sysbp', 0)
-                        diabp = record.get('lv_diabp', 0)
-                        bp_icon = "✅" if sysbp <= 120 and diabp <= 80 else "❌"
-                        bp_status = "ปกติ" if sysbp <= 120 and diabp <= 80 else "สูง"
-                        bp_color = "🔴" if bp_status != "ปกติ" else "🟢"
-                        st.write(f"{bp_color} ความดันโลหิต: {sysbp}/{diabp} mmHg ({bp_icon} {bp_status})")
                     
                     with col2:
                         st.markdown("**การทำงานของตับและไต**")
@@ -1096,11 +1120,6 @@ def lab_results_screen():
                         sgpt_icon, sgpt_status, _ = get_health_status(sgpt_value, 40, "high_bad")
                         sgpt_color = "🔴" if sgpt_status != "ปกติ" else "🟢"
                         st.write(f"{sgpt_color} SGPT: {sgpt_value} U/L ({sgpt_icon} {sgpt_status})")
-                        
-                        sgot_value = record.get('lv_sgot', 0)
-                        sgot_icon, sgot_status, _ = get_health_status(sgot_value, 40, "high_bad")
-                        sgot_color = "🔴" if sgot_status != "ปกติ" else "🟢"
-                        st.write(f"{sgot_color} SGOT: {sgot_value} U/L ({sgot_icon} {sgot_status})")
                         
                         creat_value = record.get('lv_creatinine', 0)
                         creat_icon, creat_status, _ = get_health_status(creat_value, (0.6, 1.2), "normal")
@@ -1113,6 +1132,11 @@ def lab_results_screen():
                         st.write(f"{gfr_color} GFR: {gfr_value} mL/min/1.73m² ({gfr_icon} {gfr_status})")
         else:
             st.info("ไม่พบข้อมูลในช่วงวันที่เลือก")
+    
+    # Logout button at the bottom
+    st.markdown("---")
+    if st.button("🚪 ออกจากระบบ", key="lab_results_logout"):
+        logout_user()
 
 # Screen 5: Summary
 def summary_screen():
@@ -1204,10 +1228,18 @@ def summary_screen():
     
     else:
         st.info("ยังไม่มีข้อมูลสุขภาพ กรุณากรอกข้อมูลในหน้า 'แบบฟอร์มบันทึกสุขภาพ'")
+    
+    # Logout button
+    st.markdown("---")
+    if st.button("🚪 ออกจากระบบ", key="summary_logout"):
+        logout_user()
 
 # Main app logic
-
 def main():
+    # Clear any existing query parameters on load
+    if "logout" in st.query_params:
+        st.query_params.clear()
+    
     # Check if user is logged in to determine which screens to show
     if not st.session_state.logged_in and st.session_state.current_screen != 'home':
         st.session_state.current_screen = 'home'
