@@ -97,7 +97,7 @@ def home_screen():
                     'email': reg_email,
                     'phone': reg_phone
                 }
-                success, message, user_id = register_user(reg_username, reg_password, user_info)
+                success, message = register_user(reg_username, reg_password, user_info)
                 if success:
                     st.success(message)
                     st.info("Please login with your new account")
