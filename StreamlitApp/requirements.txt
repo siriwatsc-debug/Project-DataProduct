@@ -1,0 +1,15 @@
+streamlit
+pandas==2.3.3
+numpy==2.2.6
+styles
+utils
+joblib==1.4.2
+scikit-learn==1.6.1
+imbalanced-learn
+pyyaml
+pymongo
+bcrypt
+duckdb
+google-genai
+plotly
+openpyxl==3.1.5

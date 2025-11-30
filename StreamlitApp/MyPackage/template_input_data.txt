@@ -1,0 +1,49 @@
+input_data = {
+    # 1. ข้อมูลพื้นฐาน
+    "lv_age": None,              # อายุ (Years)
+    "st_gender": None,           # เพศ ("Female"/"Male")
+    "lv_weight": None,           # น้ำหนัก (kg)
+    "lv_height": None,           # ส่วนสูง (cm)
+    "lv_bmi": None,              # BMI (คำนวณจากน้ำหนัก/ส่วนสูง)
+
+    # 2. ภาวะสุขภาพปัจจุบัน
+    "st_diabetes": None,         # โรคเบาหวาน (Yes/No)
+    "st_heart_disease": None,    # โรคหัวใจ (Yes/No)
+    "st_hypertension": None,     # ความดันโลหิตสูง (Yes/No)
+    "st_bpmeds": None,           # ใช้ยาลดความดันโลหิตหรือไม่ (Yes/No)
+
+    # 3. พฤติกรรมสุขภาพ
+    "st_smoking": None,          # การสูบบุหรี่ (Yes/No)
+    "lv_cigsperday": None,       # จำนวนบุหรี่ต่อวัน (ถ้ามี)
+    "st_calc": None,             # การดื่มแอลกอฮอล์ (No,Sometimes,Frequently,Always)
+    "st_faf": None,              # การออกกำลังกาย (No,Sometimes,Frequently,Always)
+    "st_favc": None,             # การทานอาหารแคลอรี่สูงบ่อยไหม (Yes,No)
+    "st_fcvc": None,             # การทานผักในมื้ออาหาร (Sometimes,Frequently,Always)
+    "lv_ncp": None,              # จำนวนมื้อหลักต่อวัน (1,2,3,4)
+    "st_caec": None,             # กินของกินเล่นระหว่างมื้อไหม (No,Sometimes,Frequently,Always)
+    "st_ch2o": None,             # การดื่มน้ำต่อวันบ่อยไหม (Sometimes,Frequently,Always)
+    "st_scc": None,              # ตรวจสอบแคลอรี่ที่กินในแต่ละวันไหม (Yes,No)
+
+    # 4. ประวัติครอบครัว
+    "st_family_history_with_overweight": None,  # สมาชิกครอบครัวมีประวัติอ้วน/น้ำหนักเกินไหม (Yes,No)
+
+    # 5. ข้อมูลการตรวจสุขภาพ (ถ้ามี)
+    "lv_glucose": None,          # Glucose level (mg/dL)
+    "lv_HbA1c": None,            # HbA1c
+    "lv_sysbp": None,            # ความดันตัวบน (Systolic)
+    "lv_diabp": None,            # ความดันตัวล่าง (Diastolic)
+    "lv_totchol": None,          # Total Cholesterol
+    "lv_total_bilirubin": None,  # Total Bilirubin (mg/dL)
+    "lv_direct_bilirubin": None, # Direct Bilirubin (mg/dL)
+    "lv_alkphos": None,          # Alkphos (Alkaline Phosphotase)
+    "lv_sgpt": None,             # SGPT (Alamine Aminotransferase)
+    "lv_sgot": None,             # SGOT (Aspartate Aminotransferase)
+    "lv_total_protiens": None,   # Total Proteins
+    "lv_alb": None,              # Albumin
+    "lv_ag_ratio": None,         # A/G Ratio (Albumin/Globulin)
+    "lv_creatinine": None,       # Creatinine (mg/dL)
+    "lv_bun": None,              # BUN (mg/dL)
+    "lv_gfr": None,              # GFR
+    "lv_urine_output": None,     # Urine Output
+    "lv_heartrate": None         # Heart Rate (bpm)
+}

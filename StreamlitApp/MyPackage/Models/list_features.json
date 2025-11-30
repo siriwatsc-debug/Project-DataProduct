@@ -1,0 +1,58 @@
+{
+    "Diabetes $ label": [
+        "st_gender",
+        "lv_age",
+        "st_hypertension",
+        "st_heart_disease",
+        "st_smoking",
+        "lv_bmi",
+        "lv_HbA1c",
+        "lv_glucose"
+    ],
+    "Obesity $ Label": [
+        "st_gender",
+        "lv_age",
+        "lv_height",
+        "lv_weight",
+        "st_family_history_with_overweight",
+        "st_favc",
+        "st_fcvc",
+        "lv_ncp",
+        "st_caec",
+        "st_smoking",
+        "st_ch2o",
+        "st_scc",
+        "st_faf",
+        "st_calc"
+    ],
+    "Liver $ Label": [
+        "lv_age",
+        "st_gender",
+        "lv_total_bilirubin",
+        "lv_direct_bilirubin",
+        "lv_alkphos",
+        "lv_sgpt",
+        "lv_sgot",
+        "lv_total_protiens",
+        "lv_alb",
+        "lv_ag_ratio"
+    ],
+    "Kidney $ Label1": [
+        "lv_age",
+        "lv_creatinine",
+        "lv_bun",
+        "st_diabetes",
+        "st_hypertension",
+        "lv_gfr",
+        "lv_urine_output"
+    ],
+    "Kidney $ Label2": [
+        "lv_age",
+        "lv_creatinine",
+        "lv_bun",
+        "st_diabetes",
+        "st_hypertension",
+        "lv_gfr",
+        "lv_urine_output"
+    ]
+}
