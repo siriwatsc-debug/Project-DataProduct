@@ -187,9 +187,9 @@ from google.genai import types
 # import google.generativeai as genai
 
 class MyAIGenerator:
-    def __init__(self, google_api_key):
+    def __init__(self, google_api_key, model_name):
         self.client = genai.Client(api_key=google_api_key)
-        self.model = 'gemini-2.0-flash'
+        self.model = model_name
 
         self.json_schema = {
             "type": "object",

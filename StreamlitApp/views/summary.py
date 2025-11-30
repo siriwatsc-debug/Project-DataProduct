@@ -12,30 +12,25 @@ def init_model():
     return mm
 mm = init_model()
 
-
-@st.cache_resource(ttl=3600)
-def init_ai(enable_ai):
-    if enable_ai:
-        ai = MyAIGenerator(st.secrets['GOOGLE_API']['api_key'])
-    else:
-        ai = None
-    return ai
-
-
-if 'feature_ai' not in st.session_state:
-    st.session_state.feature_ai = False
-
-ai = init_ai(st.session_state.feature_ai)
-
-
 @st.cache_resource(ttl=3600)
 def get_model_prediction(health_data):
     prediction = mm.predict_all_models(health_data)
     return prediction
 
+
+if 'feature_ai' not in st.session_state:
+    st.session_state.feature_ai = False
+
+
 @st.cache_resource(ttl=3600)
-def get_ai_recommendations(_ai, health_data):
-    ai_recommendations = _ai.get_response(health_data)
+def init_ai(google_api_key, model_name):
+    ai = MyAIGenerator(google_api_key, model_name)
+    return ai
+
+@st.cache_resource(ttl=3600)
+def get_ai_recommendations(health_data, google_api_key, model_name):
+    ai = init_ai(google_api_key, model_name)
+    ai_recommendations = ai.get_response(health_data)
     return ai_recommendations
 
 
@@ -256,8 +251,7 @@ def summary_screen():
 
             
         if st.session_state.feature_ai:
-            ai = init_ai(st.session_state.feature_ai)
-            ai_recommendations = get_ai_recommendations(ai,health_data)
+            ai_recommendations = get_ai_recommendations(health_data, st.secrets['GOOGLE_API']['api_key'], st.secrets['GOOGLE_API']['model_name'])
 
             st.markdown('<div class="sub-header">วิเคราะห์โรคโดย AI</div>', unsafe_allow_html=True)
             
