@@ -237,7 +237,9 @@ def summary_screen():
             with col_d1:
                 st.write(name_decease)
             with col_d2:
-                st.write(predict)
+                #st.write(predict)
+                risk_status = "เสี่ยงต่ำ" if (predict == 0 or predict == 'Normal_Weight')  else "เสี่ยงสูง"
+                st.write(f"{predict} - {risk_status}")
             with col_d3:
                 # Inputs
                 columns = original_df.columns
