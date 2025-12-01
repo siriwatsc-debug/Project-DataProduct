@@ -15,7 +15,6 @@ def health_form_screen():
     start_date = today - timedelta(days=200 * 365) # Approx 200 years
 
     # Date selection for new record
-    #record_date = st.date_input("วันที่บันทึกข้อมูล", value=datetime.now(), key="record_date")
     record_date = st.date_input("วันที่บันทึกข้อมูล", 
         value=today,
         min_value=start_date, # set minimum date
