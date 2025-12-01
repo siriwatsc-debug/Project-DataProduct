@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils import get_latest_health_record, save_health_record, logout_user
 
 def health_form_screen():
@@ -8,9 +8,21 @@ def health_form_screen():
     # Load latest health data for this user
     user_health_data = get_latest_health_record(st.session_state.user_id) or {}
     
+    # Set current date 
+    today = datetime.now().date()
+
+    # Set timedelta 
+    start_date = today - timedelta(days=200 * 365) # Approx 200 years
+
     # Date selection for new record
-    record_date = st.date_input("วันที่บันทึกข้อมูล", value=datetime.now(), key="record_date")
-    
+    #record_date = st.date_input("วันที่บันทึกข้อมูล", value=datetime.now(), key="record_date")
+    record_date = st.date_input("วันที่บันทึกข้อมูล", 
+        value=today,
+        min_value=start_date, # set minimum date
+        max_value=today,      # set maximum date as today  
+        key="record_date"
+    )
+
     # Section 1: Basic Information
     st.markdown('<div class="section-header">ข้อมูลพื้นฐาน</div>', unsafe_allow_html=True)
     
