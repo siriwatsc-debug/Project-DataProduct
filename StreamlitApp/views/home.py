@@ -17,16 +17,23 @@ def home_screen():
         </div>
         """, unsafe_allow_html=True)
         
+        IMAGE_FILE_NAME = "logo1.png"
+        st.image(
+            image=IMAGE_FILE_NAME,
+            #caption="Health Data App Interface (Risk Evaluation)",
+            use_column_width=True # Optional: Makes the image use the full width of the column
+        )
+
         # Create two columns for the images
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown('<div class="image-placeholder">📊 ดูผลวิเคราะห์สุขภาพ</div>', unsafe_allow_html=True)
+            #st.markdown('<div class="image-placeholder">📊 ดูผลวิเคราะห์สุขภาพ</div>', unsafe_allow_html=True)
             if st.button("📊 ดูสรุปผลสุขภาพ", use_container_width=True, key="home_to_summary"):
                 navigate_to('summary')
         
         with col2:
-            st.markdown('<div class="image-placeholder">📝 บันทึกข้อมูลใหม่</div>', unsafe_allow_html=True)
+            #st.markdown('<div class="image-placeholder">📝 บันทึกข้อมูลใหม่</div>', unsafe_allow_html=True)
             if st.button("📝 บันทึกสุขภาพ", use_container_width=True, key="home_to_health_form"):
                 navigate_to('health_form')
         
