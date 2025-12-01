@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image
 from utils import get_user_profile, verify_user, register_user, logout_user, navigate_to
 
 def home_screen():
