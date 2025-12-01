@@ -18,12 +18,9 @@ def home_screen():
         </div>
         """, unsafe_allow_html=True)
         
-        IMAGE_FILE_NAME = "logo1.png"
-        st.image(
-            image=IMAGE_FILE_NAME,
-            #caption="Health Data App Interface (Risk Evaluation)",
-            use_column_width=True # Optional: Makes the image use the full width of the column
-        )
+        uploaded_file = 'logo1.png'  # Add logo App
+        image = Image.open(uploaded_file)
+        st.image(image, caption='', use_column_width=True)
 
         # Create two columns for the images
         col1, col2 = st.columns(2)
