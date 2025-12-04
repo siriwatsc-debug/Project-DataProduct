@@ -137,54 +137,54 @@ def health_form_screen():
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        lv_total_bilirubin = st.number_input("บิลิรูบินรวม (mg/dL)", min_value=0.0, 
+        lv_total_bilirubin = st.number_input("Total Bilirubin (mg/dL)", min_value=0.0, 
                                            value=float(user_health_data.get('lv_total_bilirubin', 0.7)), step=0.1, key="lv_total_bilirubin")
-        lv_direct_bilirubin = st.number_input("บิลิรูบินโดยตรง (mg/dL)", min_value=0.0, 
+        lv_direct_bilirubin = st.number_input("Direct Bilirubin (mg/dL)", min_value=0.0, 
                                             value=float(user_health_data.get('lv_direct_bilirubin', 0.2)), step=0.1, key="lv_direct_bilirubin")
     
     with col2:
-        lv_alkphos = st.number_input("Alkaline Phosphotase", min_value=0.0, 
+        lv_alkphos = st.number_input("ALP (Alkaline Phosphatase )", min_value=0.0, 
                                    value=float(user_health_data.get('lv_alkphos', 80.0)), step=0.1, key="lv_alkphos")
-        lv_sgpt = st.number_input("SGPT Alamine Aminotransferase", min_value=0.0, 
+        lv_sgpt = st.number_input("ALT (Alanine Aminotransferase)", min_value=0.0, 
                                 value=float(user_health_data.get('lv_sgpt', 25.0)), step=0.1, key="lv_sgpt")
     
     with col3:
-        lv_sgot = st.number_input("SGOT Aspartate Aminotransferase", min_value=0.0, 
+        lv_sgot = st.number_input("AST (Aspartate Aminotransferase)", min_value=0.0, 
                                 value=float(user_health_data.get('lv_sgot', 28.0)), step=0.1, key="lv_sgot")
-        lv_total_protiens = st.number_input("โปรตีนรวม (g/dL)", min_value=0.0, 
+        lv_total_protiens = st.number_input("Total Proteins (g/dL)", min_value=0.0, 
                                           value=float(user_health_data.get('lv_total_protiens', 7.0)), step=0.1, key="lv_total_protiens")
     
     with col4:
-        lv_alb = st.number_input("อัลบูมิน (g/dL)", min_value=0.0, 
+        lv_alb = st.number_input("Albumin (ALB) (g/dL)", min_value=0.0, 
                                value=float(user_health_data.get('lv_alb', 4.0)), step=0.1, key="lv_alb")
-        lv_ag_ratio = st.number_input("A/G Ratio", min_value=0.0, 
+        lv_ag_ratio = st.number_input("A/G Ratio (Albumin/Globulin Ratio)", min_value=0.0, 
                                     value=float(user_health_data.get('lv_ag_ratio', 1.2)), step=0.1, key="lv_ag_ratio")
     
     # Section 5: Kidney Function and Cardiovascular
-    st.markdown('<div class="section-header">การทำงานของไตและหัวใจ</div>', unsafe_allow_html=True)
+    #st.markdown('<div class="section-header">การทำงานของไตและหัวใจ</div>', unsafe_allow_html=True)
     
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        lv_creatinine = st.number_input("ครีเอตินีน (mg/dL)", min_value=0.0, 
+        lv_creatinine = st.number_input("Creatinine (mg/dL)", min_value=0.0, 
                                       value=float(user_health_data.get('lv_creatinine', 0.9)), step=0.1, key="lv_creatinine")
-        lv_bun = st.number_input("BUN (mg/dL)", min_value=0.0, 
+        lv_bun = st.number_input("Blood Urea Nitrogen (BUN) (mg/dL)", min_value=0.0, 
                                value=float(user_health_data.get('lv_bun', 15.0)), step=0.1, key="lv_bun")
     
     with col2:
-        lv_gfr = st.number_input("GFR (mL/min/1.73m²)", min_value=0.0, 
+        lv_gfr = st.number_input("Estimated GFR (eGFR)(mL/min/1.73m²)", min_value=0.0, 
                                value=float(user_health_data.get('lv_gfr', 90.0)), step=0.1, key="lv_gfr")
-        lv_urine_output = st.number_input("ปริมาณปัสสาวะ (mL/day)", min_value=0, 
+        lv_urine_output = st.number_input("Urine Output (mL/day)", min_value=0, 
                                         value=user_health_data.get('lv_urine_output', 1500), key="lv_urine_output")
     
     with col3:
-        lv_totchol = st.number_input("คอเลสเตอรอลรวม (mg/dL)", min_value=0.0, 
+        lv_totchol = st.number_input("Total Cholesterol (mg/dL)", min_value=0.0, 
                                    value=float(user_health_data.get('lv_totchol', 180.0)), step=0.1, key="lv_totchol")
-        lv_sysbp = st.number_input("ความดันตัวบน", min_value=0.0, 
+        lv_sysbp = st.number_input("Systolic Blood Pressure", min_value=0.0, 
                                  value=float(user_health_data.get('lv_sysbp', 120.0)), step=0.1, key="lv_sysbp")
     
     with col4:
-        lv_diabp = st.number_input("ความดันตัวล่าง", min_value=0.0, 
+        lv_diabp = st.number_input("Diastolic Blood Pressure", min_value=0.0, 
                                  value=float(user_health_data.get('lv_diabp', 80.0)), step=0.1, key="lv_diabp")
         lv_heartrate = st.number_input("อัตราการเต้นหัวใจ (bpm)", min_value=0, 
                                      value=user_health_data.get('lv_heartrate', 72), key="lv_heartrate")

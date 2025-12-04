@@ -150,7 +150,8 @@ def summary_screen():
     
     # Summary content
     user_records = get_user_health_records(st.session_state.user_id)
-    
+    count_data_error = 0 # Count fields with data error
+
     if user_records:
         latest_date = max(user_records.keys())
         health_data = user_records[latest_date]
@@ -163,37 +164,112 @@ def summary_screen():
         with col1:
             bmi_value = health_data.get('lv_bmi', 0)
             icon, status, status_class = get_health_status(bmi_value, (18.5, 24.9), "normal")
-            delta_color = "normal" if status_class == "normal" else "off"
+
+            if bmi_value == 0:
+                icon = "❌"
+                status = "Data Error"
+                status_class = "abnormal"
+                delta_color = "off" 
+                count_data_error = count_data_error + 1
+            else:
+                if bmi_value < 18.5:
+                    icon = "⬇️❌" 
+                    status = "น้ำหนักต่ำ"
+                    status_class = "abnormal"
+                    delta_color = "off" 
+                elif 18.5 <= bmi_value <= 24.9:
+                    icon = "✅"
+                    status = "ปกติ"
+                    status_class = "normal"
+                    delta_color = "normal" 
+                elif bmi_value > 24.9:  
+                    icon = "❌" 
+                    status = "น้ำหนักเกิน"
+                    status_class = "abnormal"
+                    delta_color = "off" 
+                    
+            #delta_color = "normal" if status_class == "normal" else "off"
             st.metric("ดัชนีมวลกาย (BMI)", f"{bmi_value:.1f}", 
                      delta=f"{icon} {status}", delta_color=delta_color)
         
         with col2:
             sysbp = health_data.get('lv_sysbp', 0)
             diabp = health_data.get('lv_diabp', 0)
-            bp_normal = sysbp <= 120 and diabp <= 80
-            icon = "✅" if bp_normal else "❌"
-            status = "ปกติ" if bp_normal else "สูง"
-            delta_color = "normal" if bp_normal else "off"
+
+            if sysbp == 0 or diabp == 0:
+                icon = "❌"
+                status = "Data Error"
+                delta_color = "off"
+                count_data_error = count_data_error + 1
+            else:
+                if sysbp <= 120 or diabp <= 80: 
+                    icon = "✅"
+                    status = "ปกติ" 
+                    delta_color = "normal"
+                else:
+                    if sysbp > 120 or diabp > 80:
+                        icon = "❌"
+                        status = "สูง" 
+                        delta_color = "off"
+                
             st.metric("ความดันโลหิต", f"{sysbp}/{diabp}", 
                      delta=f"{icon} {status}", delta_color=delta_color)
         
         with col3:
             glucose_value = health_data.get('lv_glucose', 0)
             icon, status, status_class = get_health_status(glucose_value, 100, "high_bad")
-            delta_color = "normal" if status_class == "normal" else "off"
+
+            if glucose_value == 0:
+                icon = "❌"
+                status = "Data Error"
+                status_class = "abnormal"
+                delta_color = "off"
+                count_data_error = count_data_error + 1
+            else:
+                if glucose_value <= 100:
+                    icon = "✅"
+                    status = "ปกติ" 
+                    status_class = "normal"
+                    delta_color = "normal"
+                elif glucose_value > 100:
+                    icon = "❌"
+                    status = "สูง" 
+                    status_class = "abnormal"
+                    delta_color = "off"
+
             st.metric("น้ำตาลในเลือด", f"{glucose_value} mg/dL", 
                      delta=f"{icon} {status}", delta_color=delta_color)
         
         with col4:
             chol_value = health_data.get('lv_totchol', 0)
             icon, status, status_class = get_health_status(chol_value, 200, "high_bad")
-            delta_color = "normal" if status_class == "normal" else "off"
+            
+            if chol_value == 0:
+                icon = "❌"
+                status = "Data Error"
+                status_class = "normal"
+                delta_color = "off"
+                count_data_error = count_data_error + 1
+            else:
+                if chol_value <= 200:
+                    icon = "✅"
+                    status = "ปกติ" 
+                    status_class = "normal"
+                    delta_color = "normal"
+                elif chol_value > 200:
+                    icon = "❌"
+                    status = "สูง" 
+                    status_class = "abnormal"
+                    delta_color = "off"
+            
             st.metric("คอเลสเตอรอล", f"{chol_value} mg/dL", 
                      delta=f"{icon} {status}", delta_color=delta_color)
         
         # Risk factors
         st.markdown('<div class="sub-header">ทำนายผลโรค</div>', unsafe_allow_html=True)
-        
+        if count_data_error : #Input data = 0 some fields
+            st.error("Data Error : การวิเคราะห์ผลอาจคลาดเคลื่อน กรุณาตรวจสอบข้อมูลสุขภาพ")
+
         # model_prediction = []
         # if health_data.get('st_smoking') == 'Yes':
         #     model_prediction.append("การสูบบุหรี่")
@@ -238,8 +314,22 @@ def summary_screen():
                 st.write(name_decease)
             with col_d2:
                 #st.write(predict)
-                risk_status = "เสี่ยงต่ำ" if (predict == 0 or predict == 'Normal_Weight')  else "เสี่ยงสูง"
-                st.write(f"{predict} - {risk_status}")
+                #risk_status = "เสี่ยงต่ำ" if (predict == 0 or predict == 'Normal_Weight')  else "เสี่ยงสูง"
+                #st.write(f"{predict} - {risk_status}")
+
+                if predict == 0 :
+                    st.success("เสี่ยงต่ำ")
+                if predict == 1 :
+                    st.error("เสี่ยงสูง")
+                if predict == 'Normal_Weight' :
+                    st.success("น้ำหนักตัวอยู่ในเกณฑ์สุขภาพดี")
+                if predict == 'Insufficient_Weight' :
+                    st.warning("น้ำหนักตัวน้อยกว่ามาตรฐาน")
+                if predict == 'Overweight_Level_I' or predict == 'Overweight_Level_II' :
+                    st.error("น้ำหนักเกินมาตรฐาน")
+                if predict == 'Obesity_Type_I' or predict == 'Obesity_Type_II' or predict == 'Obesity_Type_III':
+                    st.error("มีความเสี่ยงโรคอ้วน")  
+
             with col_d3:
                 # Inputs
                 columns = original_df.columns
