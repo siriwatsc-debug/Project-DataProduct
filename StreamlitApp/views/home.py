@@ -18,9 +18,10 @@ def home_screen():
         </div>
         """, unsafe_allow_html=True)
         
-        uploaded_file = 'logo1.png'  # Add logo App
-        image = Image.open(uploaded_file)
-        st.image(image, caption='', use_column_width=True)
+        #uploaded_file = 'logo1.png'  # Add logo App
+        #image = Image.open(uploaded_file)
+        #st.image(image, caption='', use_column_width=True)
+        st.image("https://raw.githubusercontent.com/siriwatsc-debug/Project-DataProduct/main/StreamlitApp/views/logo1.png", use_column_width=True)
 
         # Create two columns for the images
         col1, col2 = st.columns(2)
