@@ -303,7 +303,7 @@ def summary_screen():
             'label',
         ]
         ml_predictions = get_model_prediction(health_data)
-        col_d1, col_d2, col_d3, col_d4, col_d5 = st.columns(5)
+        col_d1, col_d2 = st.columns(2)
         for key in ml_predictions:
             name_decease = name_deceases[key]
             predict = ml_predictions[key]['predict']
@@ -311,26 +311,26 @@ def summary_screen():
             original_df = ml_predictions[key]['original_df']
 
             with col_d1:
-                st.write(name_decease)
+                if key == 'Liver $ Label':
+                    if predict == 1 :
+                        st.success(name_decease + "- เสี่ยงต่ำ")
+                    if predict == 2 :
+                        st.error(name_decease + "- เสี่ยงสูง")
+                else:
+                    if predict == 0 :
+                        st.success(name_decease + "- เสี่ยงต่ำ")
+                    if predict == 1 :
+                        st.error(name_decease + "- เสี่ยงสูง")
+                    if predict == 'Normal_Weight' :
+                        st.success(name_decease + "- น้ำหนักตัวอยู่ในเกณฑ์สุขภาพดี")
+                    if predict == 'Insufficient_Weight' :
+                        st.warning(name_decease + "- น้ำหนักตัวน้อยกว่ามาตรฐาน")
+                    if predict == 'Overweight_Level_I' or predict == 'Overweight_Level_II' :
+                        st.error(name_decease + "- น้ำหนักเกินมาตรฐาน")
+                    if predict == 'Obesity_Type_I' or predict == 'Obesity_Type_II' or predict == 'Obesity_Type_III':
+                        st.error(name_decease + "มีความเสี่ยงโรคอ้วน")  
+
             with col_d2:
-                #st.write(predict)
-                #risk_status = "เสี่ยงต่ำ" if (predict == 0 or predict == 'Normal_Weight')  else "เสี่ยงสูง"
-                #st.write(f"{predict} - {risk_status}")
-
-                if predict == 0 :
-                    st.success("เสี่ยงต่ำ")
-                if predict == 1 :
-                    st.error("เสี่ยงสูง")
-                if predict == 'Normal_Weight' :
-                    st.success("น้ำหนักตัวอยู่ในเกณฑ์สุขภาพดี")
-                if predict == 'Insufficient_Weight' :
-                    st.warning("น้ำหนักตัวน้อยกว่ามาตรฐาน")
-                if predict == 'Overweight_Level_I' or predict == 'Overweight_Level_II' :
-                    st.error("น้ำหนักเกินมาตรฐาน")
-                if predict == 'Obesity_Type_I' or predict == 'Obesity_Type_II' or predict == 'Obesity_Type_III':
-                    st.error("มีความเสี่ยงโรคอ้วน")  
-
-            with col_d3:
                 # Inputs
                 columns = original_df.columns
                 feature = columns[1]
